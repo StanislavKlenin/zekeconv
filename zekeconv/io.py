@@ -17,7 +17,7 @@ def mkpath(path):
 
 def load_value(filename):
     """load single value from file"""
-    with open(filename, "r") as file:
+    with open(filename, "rb") as file:
         return utl.pack_value(file.read())
 
 def load_directory_structure(root, source):
