@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from unittest import TestCase
 
 from zekeconv import utl
@@ -16,7 +18,9 @@ class TestUtl(TestCase):
                           "/path/to")
         self.assertEquals(utl.unpack_key("ex", "ex", None),
                           None)
-        # TODO: test invalid input
+        # test invalid input
+        self.assertRaises(ValueError, utl.unpack_key, "", "", "")
+        self.assertRaises(ValueError, utl.unpack_key, ".", "", "")
 
     def test_strip_trailing(self):
         self.assertEquals(utl.strip_trailing("", ""),          "")
@@ -87,11 +91,13 @@ class TestUtl(TestCase):
                            "some/key")
          self.assertEquals(utl.strip_source_subpath("/some/key", "/some/"),
                            "key")
-         # TODO: test invalid input
+         # test invalid input
+         self.assertRaises(ValueError,
+                           utl.strip_source_subpath,
+                           "/some/key", "absent")
 
     def test_key_filename(self):
         # note: key is assumed to be "relative", with source part stripped
-        # TODO: test invalid input
         self.assertEquals(utl.key_filename("", None),
                           "root.txt")
         self.assertEquals(utl.key_filename("", "/"),
@@ -110,6 +116,17 @@ class TestUtl(TestCase):
                           "path-to-key.txt")
         self.assertEquals(utl.key_filename("path/to/key", "/nested/source"),
                           "path-to-key.txt")
+        
+        # test invalid input
+        # source does not start with / but it does not matter
+        self.assertEquals(utl.key_filename("path/to/key", "source"),
+                          "path-to-key.txt")
+        self.assertEquals(utl.key_filename("", "source"),
+                          "source.txt")
+        
+        # invalid nodes
+        self.assertRaises(ValueError, utl.key_filename, "/key", "/source")
+        self.assertRaises(ValueError, utl.key_filename, None,   "/source")
 
     def test_preprocess_source_subpath(self):
         self.assertEquals(utl.preprocess_source_subpath(None), None)

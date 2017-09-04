@@ -11,16 +11,6 @@ import sys
 
 BASE64_PREFIX = "base64:"
 
-#def pack_value(value):
-#    """convert single value from filesystem representation to zeke dump format"""
-#    if not value:
-#        return ""
-#    # TODO: strip newline before? no
-#    try:
-#        return value.decode('utf-8')[:-1] # strip newline added during unpack
-#    except UnicodeDecodeError:
-#        return BASE64_PREFIX + base64.b64encode(value).decode('utf-8')
-
 def pack_value(value):
     """convert single value from directory representation to zeke dump format"""
     if not value:
@@ -28,8 +18,6 @@ def pack_value(value):
     
     try:
         # decode and strip newline added during unpack
-        #print("HERE1 " + value.decode('utf-8'))
-        #print("HERE2 " + strip_trailing_once(value.decode('utf-8'), "\n"))
         return strip_trailing_once(value.decode('utf-8'), "\n")
     except UnicodeDecodeError:
         return BASE64_PREFIX + base64.b64encode(value).decode('utf-8')
@@ -69,19 +57,6 @@ def unpack_key(root, dir, source):
             return "/" + key
         else:
             return source + key
-    
-    
-    ##key = os.path.relpath(dir, root)
-    ##if key == ".":
-    ##    if source == "/":
-    ##        return source
-    ##    else:
-    ##        # strip trailing slash
-    ##        # (source must end with it, client must ensure that)
-    ##        # TODO: ?
-    ##        return source[:-1]
-    ##else:
-    ##    return source + key
 
 def pack_pairs(pairs):
     separator = "\n"
@@ -89,7 +64,7 @@ def pack_pairs(pairs):
 
 def unpack_pair(line):
     lst = json.loads(line)
-    # TODO: validate logical correctness
+    # validate logical correctness
     if type(lst) != list:
         raise ValueError("expected a list, got {0} "
                          "while loading '{1}'".format(type(lst), line.rstrip()))
@@ -100,6 +75,8 @@ def unpack_pair(line):
 
 def key_filename(key, source):
     """convert key name into file name"""
+    if key == None or key.startswith("/"):
+        raise ValueError
     suffix = ".txt"
     flat = re.sub(r'/', '-', key) + suffix
     if flat == suffix:
@@ -112,14 +89,12 @@ def key_filename(key, source):
             return os.path.basename(strip_trailing(source, "/")) + suffix
     else:
         return flat
-    
-    
-    # replace slashes with dashes
-    #return re.sub(r'/', '-', key) + ".txt"
 
 def strip_source_subpath(key, source):
     """remove subpath prefix from the key"""
     prefix = source if source else "/"
+    if not key.startswith(prefix):
+        raise ValueError("'{0}' doesn't start with '{1}'".format(key, prefix))
     return key[len(prefix):]
 
 def preprocess_source_subpath(source):
@@ -127,10 +102,6 @@ def preprocess_source_subpath(source):
         return None
     else:
         return strip_trailing(source, "/") + "/"
-    #if not source:
-    #    return "/"
-    #if not source.endswith("/"):
-    #    return source + "/"
 
 def strip_trailing_once(line, what):
     if (not line) or (not what):
