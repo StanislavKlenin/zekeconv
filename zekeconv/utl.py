@@ -93,8 +93,9 @@ def key_filename(key, source):
 def strip_source_subpath(key, source):
     """remove subpath prefix from the key"""
     prefix = source if source else "/"
-    if not key.startswith(prefix):
-        raise ValueError("'{0}' doesn't start with '{1}'".format(key, prefix))
+    # source always ends with / by design but key does not
+    if not (key + "/").startswith(prefix):
+        raise ValueError("'{0}'/ doesn't start with '{1}'".format(key, prefix))
     return key[len(prefix):]
 
 def preprocess_source_subpath(source):

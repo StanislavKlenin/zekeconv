@@ -91,6 +91,9 @@ class TestUtl(TestCase):
                            "some/key")
          self.assertEquals(utl.strip_source_subpath("/some/key", "/some/"),
                            "key")
+         # this is also valid scenario:
+         self.assertEquals(utl.strip_source_subpath("/some", "/some/"),
+                           "")
          # test invalid input
          self.assertRaises(ValueError,
                            utl.strip_source_subpath,

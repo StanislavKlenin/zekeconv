@@ -10,8 +10,8 @@ from . import utl
 
 def main():
     parser = argparse.ArgumentParser(description="convert between zeke dump files and directory structures")
-    parser.add_argument("-f", "--file",    metavar="DUMP", help="zeke dumk (.zk) file", required=True)
-    parser.add_argument("-s", "--source",  metavar="SOURCE", help="origininal source (subroot) of zookeeper tree")
+    parser.add_argument("-f", "--file",    metavar="DUMP", help="zeke dump (.zk) file", required=True)
+    parser.add_argument("-s", "--source",  metavar="SOURCE", help="original source (subroot) of zookeeper tree")
     parser.add_argument("-V", "--verbose", action='store_true', default=False, help="be more verbose")
     
     group = parser.add_mutually_exclusive_group(required=True)
@@ -23,6 +23,7 @@ def main():
     # global exception handler
     try:
         source = utl.preprocess_source_subpath(args.source)
+        log = sys.stderr if args.verbose else None
         
         # parser ensures these two are mutually exclusive
         if args.unpack:
@@ -30,15 +31,15 @@ def main():
                 print("unpacking zeke dump '{1}' "
                       "into directory structure at '{0}'".format(args.unpack,
                                                                  args.file),
-                      file=sys.stderr)
-            io.unpack(args.file, args.unpack, source)
+                      file=log)
+            io.unpack(args.file, args.unpack, source, log)
             
         if args.pack:
             if (args.verbose):
                 print("packing directory structure at '{0}' "
                       "into zeke dump '{1}'".format(args.pack, args.file),
-                      file=sys.stderr)
-            io.pack(args.pack, args.file, source)
+                      file=log)
+            io.pack(args.pack, args.file, source, log)
             
     except Exception as e:
         print("Error ({0}): {1}".format(type(e).__name__, e), file=sys.stderr)

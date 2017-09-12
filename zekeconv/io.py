@@ -1,4 +1,4 @@
-#from __future__ import print_function
+from __future__ import print_function
 
 from . import utl
 
@@ -41,10 +41,12 @@ def load_directory_structure(root, source):
     return pairs
 
 
-def unpack(dump, root, source):
+def unpack(dump, root, source, log=None):
     """unpack zeke dump file into directory structure"""
+    count = 0
     with open(dump, "r") if dump is not "-" else sys.stdin as f:
         for line in f:
+            count = count + 1
             (key, value) = utl.unpack_pair(line)
             level = len(key.split(os.sep))
             indent = "  " * level
@@ -55,12 +57,22 @@ def unpack(dump, root, source):
             if value:
                 basename = utl.key_filename(subkey, source)
                 outfile = os.path.join(dir, basename)
-                #print("{2}saving value of key '{0}' to '{1}'".format(key, outfile, indent), file=sys.stderr)
+                if log is not None:
+                    print("{2}saving value of '{0}' to '{1}'".format(key,
+                                                                     outfile,
+                                                                     indent),
+                          file=log)
                 with open(outfile, "w") as vf:
                     vf.write(utl.unpack_value(value))
+    if log is not None:
+        print("nodes processed: {0}".format(count), file=log)
 
-def pack(root, dump, source):
+def pack(root, dump, source, log=None):
     """pack directory structure into zeke dump file"""
     pairs = load_directory_structure(root, source)
+    if log is not None:
+        map(lambda x: print("updating node {0}".format(x[0]), file=log), pairs)
     with open(dump, "w") if dump is not "-" else sys.stdout as f:
         f.write(utl.pack_pairs(pairs))
+    if log is not None:
+        print("nodes processed: {0}".format(len(pairs)), file=log)
